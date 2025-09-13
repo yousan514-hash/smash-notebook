@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PercentBand { 
+  PERCENT_0_30
+  PERCENT_40_70
+  PERCENT_80_PLUS
+  KILL
+}
+
+enum Situation { 
+  neutral
+  ledgetrap
+  edgeguard
+  recovery
+  combo
+  line
+}
+
+model Profile {
+  id           String   @id @default(uuid())
+  displayName  String
+  handle       String?  @unique
+  bio          String?
+  mainChars    String[] @default([])
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  decks        Deck[]
+  posts        Post[]   @relation("PostAuthor")
+  comments     PostComment[]
+  likes        PostLike[]
+  communities  CommunityMember[]
+  attempts     ProblemAttempt[]
+  cards        Card[]
+}
+
+model Deck {
+  id        String  @id @default(uuid())
+  ownerId   String
+  owner     Profile @relation(fields: [ownerId], references: [id])
+  title     String
+  isPublic  Boolean @default(false)
+  createdAt DateTime @default(now())
+  cards     Card[]
+}
+
+model Card {
+  id           String  @id @default(uuid())
+  deckId       String
+  deck         Deck    @relation(fields: [deckId], references: [id])
+  ownerId      String
+  owner        Profile @relation(fields: [ownerId], references: [id])
+  myChar       String
+  oppChar      String
+  percentBand  PercentBand
+  situation    Situation
+  oppMove      String?
+  answerMD     String
+  isPublic     Boolean @default(false)
+  createdAt    DateTime @default(now())
+  tags         CardTag[]
+  problems     Problem[]
+  posts        Post[]   @relation("LinkedCard")
+}
+
+model Tag {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  cards CardTag[]
+}
+
+model CardTag {
+  cardId String
+  tagId  Int
+  card   Card @relation(fields: [cardId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
+  @@id([cardId, tagId])
+}
+
+model Problem {
+  id       String @id @default(uuid())
+  cardId   String
+  card     Card   @relation(fields: [cardId], references: [id])
+  prompt   String
+  correct  String
+  choices  String[]
+  attempts ProblemAttempt[]
+}
+
+model ProblemAttempt {
+  id         String  @id @default(uuid())
+  problemId  String
+  problem    Problem @relation(fields: [problemId], references: [id])
+  userId     String
+  user       Profile @relation(fields: [userId], references: [id])
+  answer     String?
+  isCorrect  Boolean?
+  answeredAt DateTime @default(now())
+}
+
+model Post {
+  id          String   @id @default(uuid())
+  authorId    String
+  author      Profile  @relation("PostAuthor", fields: [authorId], references: [id])
+  body        String
+  mediaUrls   String[]
+  linkedCardId String?
+  linkedCard  Card?    @relation("LinkedCard", fields: [linkedCardId], references: [id])
+  tags        String[]
+  createdAt   DateTime @default(now())
+  likes       PostLike[]
+  comments    PostComment[]
+}
+
+model PostLike {
+  postId  String
+  userId  String
+  post    Post    @relation(fields: [postId], references: [id])
+  user    Profile @relation(fields: [userId], references: [id])
+  @@id([postId, userId])
+}
+
+model PostComment {
+  id        String  @id @default(uuid())
+  postId    String
+  userId    String
+  post      Post    @relation(fields: [postId], references: [id])
+  user      Profile @relation(fields: [userId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model Community {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  members     CommunityMember[]
+}
+
+model CommunityMember {
+  communityId String
+  userId      String
+  role        String  @default("member")
+  community   Community @relation(fields: [communityId], references: [id])
+  user        Profile   @relation(fields: [userId], references: [id])
+  @@id([communityId, userId])
+}

@@ -1,0 +1,120 @@
+export const characters = [
+  { id: 0, name: "テンプレ" },
+  { id: 1, name: "マリオ" },
+  { id: 2, name: "ドンキーコング" },
+  { id: 3, name: "リンク" },
+  { id: 4, name: "サムス" },
+  { id: 5, name: "ダークサムス" },
+  { id: 6, name: "ヨッシー" },
+  { id: 7, name: "カービィ" },
+  { id: 8, name: "フォックス" },
+  { id: 9, name: "ピカチュウ" },
+  { id: 10, name: "ルイージ" },
+  { id: 11, name: "ネス" },
+  { id: 12, name: "キャプテン・ファルコン" },
+  { id: 13, name: "プリン" },
+  { id: 14, name: "ピーチ" },
+  { id: 15, name: "デイジー" },
+  { id: 16, name: "クッパ" },
+  { id: 17, name: "アイスクライマー" },
+  { id: 18, name: "シーク" },
+  { id: 19, name: "ゼルダ" },
+  { id: 20, name: "ドクターマリオ" },
+  { id: 21, name: "ピチュー" },
+  { id: 22, name: "ファルコ" },
+  { id: 23, name: "マルス" },
+  { id: 24, name: "ルキナ" },
+  { id: 25, name: "こどもリンク" },
+  { id: 26, name: "ガノンドロフ" },
+  { id: 27, name: "ミュウツー" },
+  { id: 28, name: "ロイ" },
+  { id: 29, name: "クロム" },
+  { id: 30, name: "Mr.ゲーム&ウォッチ" },
+  { id: 31, name: "メタナイト" },
+  { id: 32, name: "ピット" },
+  { id: 33, name: "ブラックピット" },
+  { id: 34, name: "ゼロスーツサムス" },
+  { id: 35, name: "ワリオ" },
+  { id: 36, name: "スネーク" },
+  { id: 37, name: "アイク" },
+  { id: 38, name: "ポケモントレーナー" },
+  { id: 39, name: "ディディーコング" },
+  { id: 40, name: "リュカ" },
+  { id: 41, name: "ソニック" },
+  { id: 42, name: "デデデ" },
+  { id: 43, name: "ピクミン&オリマー" },
+  { id: 44, name: "ルカリオ" },
+  { id: 45, name: "ロボット" },
+  { id: 46, name: "トゥーンリンク" },
+  { id: 47, name: "ウルフ" },
+  { id: 48, name: "むらびと" },
+  { id: 49, name: "ロックマン" },
+  { id: 50, name: "Wii Fit トレーナー" },
+  { id: 51, name: "ロゼッタ&チコ" },
+  { id: 52, name: "リトル・マック" },
+  { id: 53, name: "ゲッコウガ" },
+  { id: 54, name: "パルテナ" },
+  { id: 55, name: "パックマン" },
+  { id: 56, name: "ルフレ" },
+  { id: 57, name: "シュルク" },
+  { id: 58, name: "クッパJr." },
+  { id: 59, name: "ダックハント" },
+  { id: 60, name: "リュウ" },
+  { id: 61, name: "ケン" },
+  { id: 62, name: "クラウド" },
+  { id: 63, name: "カムイ" },
+  { id: 64, name: "ベヨネッタ" },
+  { id: 65, name: "インクリング" },
+  { id: 66, name: "リドリー" },
+  { id: 67, name: "シモン" },
+  { id: 68, name: "リヒター" },
+  { id: 69, name: "キングクルール" },
+  { id: 70, name: "しずえ" },
+  { id: 71, name: "ガオガエン" },
+  { id: 72, name: "パックンフラワー" },
+  { id: 73, name: "ジョーカー" },
+  { id: 74, name: "勇者" },
+  { id: 75, name: "バンジョー&カズーイ" },
+  { id: 76, name: "テリー" },
+  { id: 77, name: "ベレト" },
+  { id: 78, name: "ミェンミェン" },
+  { id: 79, name: "スティーブ" },
+  { id: 80, name: "セフィロス" },
+  { id: 81, name: "ホムラ/ヒカリ" },
+  { id: 82, name: "ソラ" },
+];
+
+export const templateCards = {
+  // 00テンプレ用のテンプレートカード
+  template: [
+    {
+      section: "立ち回り",
+      situation: "neutral" as const,
+      percentBand: "PERCENT_0_30" as const,
+      oppMove: "DA",
+      answerMD: "**基本方針**: ガード後は最速上B\n- 相手のDAに対してガード→上B\n- 距離を取って差し込みを狙う"
+    },
+    {
+      section: "崖展開",
+      situation: "ledgetrap" as const,
+      percentBand: "PERCENT_40_70" as const,
+      oppMove: "その場上がり",
+      answerMD: "**崖狩り**: 下スマッシュor空後\n- その場上がりに下スマ合わせ\n- ジャンプ上がりには空後"
+    },
+    {
+      section: "復帰阻止",
+      situation: "edgeguard" as const,
+      percentBand: "PERCENT_80_PLUS" as const,
+      oppMove: "上B",
+      answerMD: "**阻止方法**: 空N→空後\n- 復帰ルートを読んで空N\n- 確定で空後を当てる"
+    }
+  ]
+};
+
+export function getCharacterById(id: number) {
+  return characters.find(char => char.id === id);
+}
+
+export function getCharacterByName(name: string) {
+  return characters.find(char => char.name === name);
+}
