@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  username  String   @unique
+  email     String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  decks     Deck[]
+  cards     Card[]
+  posts     Post[]
+  tags      Tag[]
+  templates Template[]
+
+  @@map("profiles")
+}
+
+model Deck {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  isPublic    Boolean  @default(false)
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  cards Card[]
+
+  @@map("decks")
+}
+
+model Card {
+  id           String   @id @default(cuid())
+  deckId       String
+  ownerId      String
+  situation    String   // "立ち回り", "崖展開", "復帰阻止" など
+  percentBand  String   // "0%", "50%", "80%", "Kill%" など
+  oppChar      String?  // 相手キャラ
+  oppMove      String?  // 相手の技
+  questionMD   String   // 質問・シチュエーション（MDX対応）
+  answerMD     String   // 回答・対策（MDX対応）
+  tags         String[] // タグ配列
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  deck  Deck    @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Indexes for filtering
+  @@index([deckId, percentBand, situation])
+  @@index([oppChar, oppMove])
+  @@map("cards")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String
+  isPublic  Boolean  @default(true)
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Index for timeline sorting
+  @@index([createdAt])
+  @@map("posts")
+}
+
+model Template {
+  id         String  @id @default(cuid())
+  title      String
+  targetChar String  // 対象キャラ
+  section    String  // セクション（立ち回り、崖展開など）
+  percent    String  // %帯
+  oppMove    String? // 相手の技（任意）
+  answerMD   String  // 回答テンプレート（MDX対応）
+  ownerId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@map("templates")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@map("tags")
+}
