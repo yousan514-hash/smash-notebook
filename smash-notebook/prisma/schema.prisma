@@ -1,0 +1,247 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User and Authentication
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  walletAddress     String? // Web3 wallet address
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  bio           String?
+  walletAddress String?   @unique
+  daoTokens     Int       @default(0)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  decks         Deck[]
+  posts         Post[]
+  likes         Like[]
+  comments      Comment[]
+  deckLikes     DeckLike[]
+  follows       Follow[]  @relation("UserFollows")
+  followers     Follow[]  @relation("UserFollowers")
+  communities   CommunityMember[]
+  messages      Message[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Characters
+model Character {
+  id       String @id // '00', '01', '02', etc.
+  name     String
+  nameJa   String
+  series   String
+  imageUrl String?
+  
+  myDecks  Deck[] @relation("MyCharacter")
+  cards    Card[] @relation("MyCharacter")
+  oppCards Card[] @relation("OppCharacter")
+}
+
+// Deck and Card System
+model Deck {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  myCharacter String   // Character ID
+  isTemplate  Boolean  @default(false)
+  isPublic    Boolean  @default(true)
+  tags        String[]
+  likes       Int      @default(0)
+  uses        Int      @default(0)
+  
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character   Character  @relation("MyCharacter", fields: [myCharacter], references: [id])
+  cards       Card[]
+  deckLikes   DeckLike[]
+  posts       Post[]     @relation("DeckPosts")
+}
+
+model Card {
+  id          String @id @default(cuid())
+  myChar      String // Character ID
+  oppChar     String // Character ID
+  percentBand String // '0-30', '40-70', '80+', 'Kill%'
+  situation   String // 'neutral', 'ledgetrap', 'edgeguard', 'recovery', 'combo', 'line'
+  section     String // '立ち回り', '崖展開', '崖狩り', '復帰阻止', 'ライン回復', '崖上がり', '復帰'
+  oppMove     String?
+  answerMD    String @db.Text
+  tags        String[]
+  order       Int    @default(0)
+  
+  deckId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  deck        Deck      @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  myCharacter Character @relation("MyCharacter", fields: [myChar], references: [id])
+  oppCharacter Character @relation("OppCharacter", fields: [oppChar], references: [id])
+}
+
+model DeckLike {
+  id     String @id @default(cuid())
+  userId String
+  deckId String
+  
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deck Deck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deckId])
+}
+
+// Social Features
+model Post {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  imageUrl  String?
+  videoUrl  String?
+  tags      String[]
+  deckId    String?  // Optional: link to deck
+  
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deck     Deck?     @relation("DeckPosts", fields: [deckId], references: [id])
+  likes    Like[]
+  comments Comment[]
+}
+
+model Like {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+  
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id      String @id @default(cuid())
+  content String @db.Text
+  userId  String
+  postId  String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Follow {
+  id          String @id @default(cuid())
+  followerId  String
+  followingId String
+  
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollows", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+// Community Features
+model Community {
+  id          String @id @default(cuid())
+  name        String
+  description String?
+  character   String? // Optional: character-focused community
+  tags        String[]
+  isPublic    Boolean @default(true)
+  imageUrl    String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members  CommunityMember[]
+  messages Message[]
+}
+
+model CommunityMember {
+  id          String @id @default(cuid())
+  userId      String
+  communityId String
+  role        String @default("member") // "admin", "moderator", "member"
+  
+  joinedAt    DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, communityId])
+}
+
+model Message {
+  id          String @id @default(cuid())
+  content     String @db.Text
+  imageUrl    String?
+  userId      String
+  communityId String
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+}
