@@ -1,0 +1,115 @@
+// Datasource & generator
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core models
+model Profile {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  decks   Deck[]
+  posts   Post[]
+  cards   Card[]     @relation("CardOwner")
+  tags    Tag[]
+  templates Template[]
+}
+
+model Deck {
+  id        String   @id @default(uuid())
+  title     String
+  isPublic  Boolean  @default(false)
+  ownerId   String
+  owner     Profile  @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cards Card[]
+
+  @@index([ownerId])
+}
+
+enum Situation {
+  NEUTRAL
+  ADVANTAGE
+  DISADVANTAGE
+  EDGE_GUARD
+  LEDGE_TRAP
+}
+
+model Card {
+  id           String     @id @default(uuid())
+  deckId       String
+  deck         Deck       @relation(fields: [deckId], references: [id])
+  ownerId      String
+  owner        Profile    @relation("CardOwner", fields: [ownerId], references: [id])
+  title        String
+  percentBand  Int        // 0, 50, 80, 999(Kill)
+  situation    Situation
+  oppChar      String?
+  oppMove      String?
+  tags         CardTag[]
+  answerMD     String?
+  isPublic     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([deckId, percentBand, situation])
+  @@index([oppChar, oppMove])
+  @@index([ownerId])
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  ownerId   String
+  owner     Profile  @relation(fields: [ownerId], references: [id])
+  body      String
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([ownerId])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String
+  ownerId   String
+  owner     Profile  @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+
+  cards CardTag[]
+
+  @@unique([ownerId, name])
+}
+
+model CardTag {
+  cardId String
+  tagId  String
+  card   Card   @relation(fields: [cardId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([cardId, tagId])
+}
+
+model Template {
+  id         String   @id @default(uuid())
+  title      String
+  targetChar String
+  section    String
+  percent    Int
+  oppMove    String?
+  answerMD   String
+  ownerId    String
+  owner      Profile  @relation(fields: [ownerId], references: [id])
+  createdAt  DateTime @default(now())
+}
