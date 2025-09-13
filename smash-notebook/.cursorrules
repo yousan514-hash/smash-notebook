@@ -1,0 +1,59 @@
+# Smash Notebook Domain Rules
+
+## Type Definitions
+- PercentBand = '0-30' | '40-70' | '80+' | 'Kill%'
+- Situation = 'neutral' | 'ledgetrap' | 'edgeguard' | 'recovery' | 'combo' | 'line'
+- Character = '00' | '01' | '02' | ... | '82' (マリオ〜ソラまで)
+- Section = '立ち回り' | '崖展開' | '崖狩り' | '復帰阻止' | 'ライン回復' | '崖上がり' | '復帰'
+
+## Card Structure
+Card = {
+  id: string
+  myChar: Character
+  oppChar: Character
+  percentBand: PercentBand
+  situation: Situation
+  oppMove?: string
+  answerMD: string
+  section: Section
+  tags: string[]
+}
+
+## Deck Structure
+Deck = {
+  id: string
+  title: string
+  description?: string
+  myCharacter: Character
+  cards: Card[]
+  isTemplate: boolean
+  isPublic: boolean
+  tags: string[]
+  likes: number
+  uses: number
+}
+
+## Character List (00-82)
+- 00: テンプレート
+- 01: マリオ, 02: ドンキーコング, 03: リンク, 04: サムス, 05: ダークサムス, 06: ヨッシー
+- 07: カービィ, 08: フォックス, 09: ピカチュウ, 10: ルイージ, 11: ネス, 12: キャプテン・ファルコン
+- 13: プリン, 14: ピーチ, 15: デイジー, 16: クッパ, 17: アイスクライマー, 18: シーク
+- 19: ゼルダ, 20: ドクターマリオ, 21: ピチュー, 22: ファルコ, 23: マルス, 24: ルキナ
+- 25: こどもリンク, 26: ガノンドロフ, 27: ミュウツー, 28: ロイ, 29: クロム, 30: Mr.ゲーム&ウォッチ
+- 31: メタナイト, 32: ピット, 33: ブラックピット, 34: ゼロスーツサムス, 35: ワリオ, 36: スネーク
+- 37: アイク, 38: ポケモントレーナー, 39: ディディーコング, 40: リュカ, 41: ソニック, 42: デデデ
+- 43: ピクミン&オリマー, 44: ルカリオ, 45: ロボット, 46: トゥーンリンク, 47: ウルフ, 48: むらびと
+- 49: ロックマン, 50: Wii Fit トレーナー, 51: ロゼッタ&チコ, 52: リトル・マック, 53: ゲッコウガ, 54: Mii格闘タイプ
+- 55: Mii剣術タイプ, 56: Mii射撃タイプ, 57: パルテナ, 58: パックマン, 59: ルフレ, 60: シュルク
+- 61: クッパJr., 62: ダックハント, 63: リュウ, 64: ケン, 65: クラウド, 66: カムイ, 67: ベヨネッタ
+- 68: インクリング, 69: リドリー, 70: シモン, 71: リヒター, 72: キングクルール, 73: しずえ, 74: ガオガエン
+- 75: パックンフラワー, 76: ジョーカー, 77: 勇者, 78: バンジョー&カズーイ, 79: テリー, 80: ベレト/ベレス
+- 81: ミェンミェン, 82: スティーブ/アレックス, 83: セフィロス, 84: ホムラ/ヒカリ, 85: カズヤ, 86: ソラ
+
+## Development Guidelines
+- TypeScript strict mode
+- Tailwind CSS for styling
+- Server Actions for mutations
+- Route Handlers for API endpoints
+- Responsive design mobile-first
+- Error boundaries and loading states
