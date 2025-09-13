@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  email     String
+  name      String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  decks Deck[]
+  cards Card[]
+  posts Post[]
+  templates Template[]
+
+  @@map("profiles")
+}
+
+model Deck {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  character   String
+  isPublic    Boolean  @default(false)
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  cards Card[]
+
+  @@map("decks")
+}
+
+model Card {
+  id           String   @id @default(cuid())
+  deckId       String
+  title        String
+  question     String
+  answerMD     String
+  percentBand  String?  // "00", "50", "80", "Kill"
+  situation    String?  // "立ち回り", "崖展開", "回復", etc.
+  oppChar      String?
+  oppMove      String?
+  tags         String[] // Array of tag strings
+  ownerId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  deck  Deck    @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([deckId, percentBand, situation])
+  @@index([oppChar, oppMove])
+  @@map("cards")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  isPublic  Boolean  @default(false)
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([createdAt])
+  @@map("posts")
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  title     String
+  targetChar String
+  section   String
+  percent   String
+  oppMove   String?
+  answerMD  String
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@map("templates")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  category  String?  // "section", "character", "move", etc.
+  createdAt DateTime @default(now())
+
+  @@map("tags")
+}
