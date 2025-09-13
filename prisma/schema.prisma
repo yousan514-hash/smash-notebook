@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PercentBand {
+  P00
+  P50
+  P80
+  KILL
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  displayName String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  decks  Deck[]
+  cards  Card[]
+  posts  Post[]
+}
+
+model Deck {
+  id        String   @id @default(uuid())
+  ownerId   String
+  title     String
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  cards Card[]
+}
+
+model Card {
+  id          String       @id @default(uuid())
+  ownerId     String
+  deckId      String
+  question    String
+  answerMD    String
+  percentBand PercentBand
+  situation   String       @db.VarChar(64)
+  oppChar     String?      @db.VarChar(64)
+  oppMove     String?      @db.VarChar(64)
+  isPublic    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  deck  Deck    @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  tags CardTag[]
+
+  @@index([deckId, percentBand, situation])
+  @@index([oppChar, oppMove])
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  ownerId   String
+  content   String
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+}
+
+model Template {
+  id         String   @id @default(uuid())
+  ownerId    String
+  title      String
+  targetChar String   @db.VarChar(64)
+  section    String   @db.VarChar(64)
+  percent    String   @db.VarChar(32)
+  oppMove    String?  @db.VarChar(64)
+  answerMD   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  owner Profile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  cards     CardTag[]
+}
+
+model CardTag {
+  cardId String
+  tagId  String
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([cardId, tagId])
+}
+
