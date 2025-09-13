@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  username  String   @unique
+  bio       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  decks     Deck[]
+  posts     Post[]
+  cards     Card[]
+  tags      Tag[]
+  templates Template[]
+}
+
+model Deck {
+  id          String   @id @default(cuid())
+  ownerId     String
+  owner       Profile  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  targetChar  String   // 自キャラ (e.g., "Sora", "Mario")
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cards Card[]
+}
+
+model Card {
+  id          String   @id @default(cuid())
+  ownerId     String
+  owner       Profile  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  deckId      String
+  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  percentBand String   // "00", "50", "80", "Kill"
+  situation   String   // "立ち回り", "崖展開", "撃墜", "着地狩り", "復帰阻止"
+  oppChar     String?  // 相手キャラ (optional)
+  oppMove     String?  // 相手の技 (optional)
+  answerMD    String   // MDX形式の回答
+  tags        String[] // タグの配列
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([deckId, percentBand, situation])
+  @@index([oppChar, oppMove])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     Profile  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  content   String
+  isPublic  Boolean  @default(true)
+  tags      String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  category  String?  // "section", "custom" など
+  ownerId   String?
+  owner     Profile? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     Profile  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title     String
+  targetChar String  // 対象キャラ
+  section   String   // セクション
+  percent   String   // %帯
+  oppMove   String?  // 相手の技（オプション）
+  answerMD  String   // MDX形式のテンプレート内容
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
